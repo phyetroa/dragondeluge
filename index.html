@@ -77,8 +77,22 @@
         }
 
         /* ── TELA DE LOGIN ─────────────────────────────── */
+        /* Overlay cobre a tela inteira e centraliza o painel */
         #auth-overlay {
-            position: absolute;
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(ellipse at center, #1a0800 0%, #000 100%);
+            z-index: 300;
+            overflow-y: auto;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        /* Painel central do login */
+        .auth-panel {
             background: linear-gradient(160deg, rgba(30,10,2,0.98) 0%, rgba(10,5,2,1) 100%);
             padding: 40px 28px 32px;
             border-top: 3px solid var(--db-gold);
@@ -86,16 +100,17 @@
             border-left: 1px solid rgba(245,197,24,0.3);
             border-right: 1px solid rgba(245,197,24,0.3);
             text-align: center;
-            z-index: 100;
-            width: 90%;
+            width: 100%;
             max-width: 420px;
             box-sizing: border-box;
             backdrop-filter: blur(20px);
             clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+            position: relative;
+            flex-shrink: 0;
         }
 
         /* Brilho dourado pulsante na borda do login */
-        #auth-overlay::before {
+        .auth-panel::before {
             content: '';
             position: absolute;
             inset: -1px;
@@ -265,6 +280,8 @@
         }
 
         /* ── RESPONSIVO MOBILE ────────────────────────── */
+        /* Em qualquer tela mobile o wrapper mantém o aspect ratio 1100/650
+           e fica centralizado — nunca estica o canvas */
         @media (max-width: 900px) {
             body {
                 padding: 0;
@@ -272,22 +289,22 @@
                 touch-action: none;
             }
             .game-wrapper {
-                border: none;
-                border-radius: 0;
-                width: 100vw;
-                height: 100vh;
+                /* Mantém proporção — barras pretas em vez de esticar */
+                aspect-ratio: 1100 / 650;
+                width: min(100vw, calc(100vh * 1100 / 650));
+                height: min(100vh, calc(100vw * 650 / 1100));
                 max-width: 100vw;
                 max-height: 100vh;
-                aspect-ratio: unset;
+                border: none;
+                border-radius: 0;
             }
             canvas {
-                width: 100vw !important;
-                height: 100vh !important;
-                object-fit: contain;
+                width: 100% !important;
+                height: 100% !important;
             }
             h1.title { font-size: 48px; }
             .subtitle { font-size: 9px; }
-            #auth-overlay {
+            .auth-panel {
                 clip-path: none;
                 border-radius: 8px;
                 border: 2px solid var(--db-gold);
@@ -304,33 +321,37 @@
         /* Portrait: mostrar overlay de rotação */
         @media (orientation: portrait) and (max-width: 900px) {
             #rotate-overlay { display: flex; }
-            .game-wrapper { display: none; }
-            #auth-overlay { display: none !important; }
+            .game-wrapper    { display: none; }
+            /* login continua visível em portrait — só o canvas some */
         }
 
-        /* Landscape mobile: jogo ocupa tela toda */
+        /* Landscape mobile: mesma lógica de aspect ratio */
         @media (orientation: landscape) and (max-height: 500px) {
             body { padding: 0; }
             .game-wrapper {
-                border: none;
-                border-radius: 0;
-                width: 100vw;
-                height: 100vh;
+                aspect-ratio: 1100 / 650;
+                width: min(100vw, calc(100vh * 1100 / 650));
+                height: min(100vh, calc(100vw * 650 / 1100));
                 max-width: 100vw;
                 max-height: 100vh;
-                aspect-ratio: unset;
+                border: none;
+                border-radius: 0;
             }
             canvas {
-                width: 100vw !important;
-                height: 100vh !important;
+                width: 100% !important;
+                height: 100% !important;
             }
-            #auth-overlay {
+            .auth-panel {
                 clip-path: none;
                 border-radius: 8px;
                 border: 2px solid var(--db-gold);
                 padding: 20px 16px;
             }
-            h1.title { font-size: 44px; }
+            h1.title     { font-size: 44px; }
+            .subtitle    { font-size: 9px; letter-spacing: 3px; }
+            .input-group { margin-bottom: 10px; }
+            input        { padding: 10px 14px; font-size: 16px; }
+            button.spark-btn { padding: 12px; font-size: 22px; margin-top: 10px; }
         }
 
         /* ── PERFIL DO JOGADOR ────────────────────────── */
@@ -388,19 +409,21 @@
 <div id="game-modal">SYSTEM MESSAGE</div>
 
 <div id="auth-overlay">
-    <div class="auth-content">
-        <h1 class="title"><span class="title-dragon">DRAGON</span><br><span class="title-deluge">DELUGE</span></h1>
-        <span class="subtitle">🐉 Patrulha do Tempo — Centro de Combate 🐉</span>
-        <div class="auth-divider"><span>ACESSO DO GUERREIRO</span></div>
-        <div class="input-group">
-            <label>⚔ Nome do Guerreiro</label>
-            <input type="text" id="user" placeholder="Ex: Goku, Vegeta...">
+    <div class="auth-panel">
+        <div class="auth-content">
+            <h1 class="title"><span class="title-dragon">DRAGON</span><br><span class="title-deluge">DELUGE</span></h1>
+            <span class="subtitle">🐉 Patrulha do Tempo — Centro de Combate 🐉</span>
+            <div class="auth-divider"><span>ACESSO DO GUERREIRO</span></div>
+            <div class="input-group">
+                <label>⚔ Nome do Guerreiro</label>
+                <input type="text" id="user" placeholder="Ex: Goku, Vegeta...">
+            </div>
+            <div class="input-group">
+                <label>🔒 Código de Acesso</label>
+                <input type="password" id="pass" placeholder="Senha secreta">
+            </div>
+            <button class="spark-btn" onclick="handleAuth()">🐉 ENTRAR NA BATALHA</button>
         </div>
-        <div class="input-group">
-            <label>🔒 Código de Acesso</label>
-            <input type="password" id="pass" placeholder="Senha secreta">
-        </div>
-        <button class="spark-btn" onclick="handleAuth()">🐉 ENTRAR NA BATALHA</button>
     </div>
 </div>
 
@@ -13838,25 +13861,24 @@ document.addEventListener('webkitfullscreenchange', () => {
     }
 });
 
-// Detetar orientação: em mobile portrait, mostrar overlay de rotação
+// ── ORIENTAÇÃO E FULLSCREEN ──────────────────────────────────
 function checkOrientation() {
     const rotateOverlay = document.getElementById('rotate-overlay');
     const gameWrapper   = document.getElementById('gameWrapper');
-    const authOverlay   = document.getElementById('auth-overlay');
     if (!rotateOverlay) return;
-    const isMobile = window.innerWidth <= 900 || ('ontouchstart' in window);
+
+    const isMobile  = window.innerWidth <= 900 || ('ontouchstart' in window);
     const isPortrait = window.innerHeight > window.innerWidth;
+
     if (isMobile && isPortrait) {
+        // Portrait: mostra aviso de rotação, esconde o canvas
         rotateOverlay.style.display = 'flex';
         gameWrapper.style.display   = 'none';
-        if (authOverlay) authOverlay.style.display = 'none';
+        // O #auth-overlay é fixed e cobre a tela — continua visível se não logado
     } else {
+        // Landscape: esconde aviso, mostra o jogo
         rotateOverlay.style.display = 'none';
         gameWrapper.style.display   = '';
-        // Só mostra auth-overlay se ainda não logado
-        if (authOverlay && currentState === STATES.AUTH) {
-            authOverlay.style.display = '';
-        }
     }
 }
 window.addEventListener('resize', checkOrientation);
